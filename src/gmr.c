@@ -37,6 +37,9 @@ gmr_t *gmr_create(gmr_size_t local_size, void **base_ptrs, ARMCI_Group *group) {
   ARMCII_Assert(local_size >= 0);
   ARMCII_Assert(group != NULL);
 
+  ARMCI_FUNC_PROFILE_TIMING_START(gmr_create);
+  ARMCI_FUNC_PROFILE_COUNTER_INC(gmr_create, 0);
+
   MPI_Comm_rank(group->comm, &alloc_me);
   MPI_Comm_size(group->comm, &alloc_nproc);
   MPI_Comm_rank(ARMCI_GROUP_WORLD.comm, &world_me);
@@ -186,6 +189,8 @@ gmr_t *gmr_create(gmr_size_t local_size, void **base_ptrs, ARMCI_Group *group) {
     mreg->prev   = parent;
   }
 
+  ARMCI_FUNC_PROFILE_TIMING_END(gmr_create);
+
   return mreg;
 }
 
@@ -200,6 +205,9 @@ void gmr_destroy(gmr_t *mreg, ARMCI_Group *group) {
   void *search_base = NULL;
   int   alloc_me, alloc_nproc;
   int   world_me, world_nproc;
+
+  ARMCI_FUNC_PROFILE_TIMING_START(gmr_destroy);
+  ARMCI_FUNC_PROFILE_COUNTER_INC(gmr_destroy, 0);
 
   MPI_Comm_rank(group->comm, &alloc_me);
   MPI_Comm_size(group->comm, &alloc_nproc);
@@ -267,6 +275,8 @@ void gmr_destroy(gmr_t *mreg, ARMCI_Group *group) {
 
   free(mreg->slices);
   free(mreg);
+
+  ARMCI_FUNC_PROFILE_TIMING_END(gmr_destroy);
 }
 
 
