@@ -74,6 +74,13 @@ gmr_t *gmr_create(gmr_size_t local_size, void **base_ptrs, ARMCI_Group *group) {
       alloc_shm_info = MPI_INFO_NULL;
   }
 
+#ifdef USE_CSP_EPOCH_TYPE
+  if(alloc_shm_info == MPI_INFO_NULL) {
+    MPI_Info_create(&alloc_shm_info);
+  }
+  MPI_Info_set(alloc_shm_info, "epoch_type", "lockall");
+#endif
+
   if (ARMCII_GLOBAL_STATE.use_win_allocate) {
 
       MPI_Win_allocate( (MPI_Aint) local_size, 1, alloc_shm_info, group->comm, &(alloc_slices[alloc_me].base), &mreg->window);
