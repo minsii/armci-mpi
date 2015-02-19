@@ -17,6 +17,27 @@
   */
 gmr_t *gmr_list = NULL;
 
+#ifdef USE_CSP_ASYNC_CONFIG
+/* 0: default | 1: on | 2: off | 3: auto*/
+int armci_async_config_flag = 0;
+void armci_enable_async() {
+    armci_async_config_flag = 1;
+}
+void armci_disable_async() {
+    armci_async_config_flag = 2;
+}
+void armci_auto_async() {
+    armci_async_config_flag = 3;
+}
+void armci_reset_async() {
+    armci_async_config_flag = 0;
+}
+#else
+void armci_enable_async(){/*do nothing*/}
+void armci_disable_async(){/*do nothing*/}
+void armci_reset_async(){/*do nothing*/}
+void armci_auto_async(){/*do nothing*/}
+#endif
 
 /** Create a distributed shared memory region. Collective on ARMCI group.
   *
@@ -81,8 +102,20 @@ gmr_t *gmr_create(gmr_size_t local_size, void **base_ptrs, ARMCI_Group *group) {
   MPI_Info_set(alloc_shm_info, "epoch_type", "lockall");
 #endif
 
-  if (ARMCII_GLOBAL_STATE.use_win_allocate) {
+#ifdef USE_CSP_ASYNC_CONFIG
+  if(alloc_shm_info == MPI_INFO_NULL) {
+    MPI_Info_create(&alloc_shm_info);
+  }
+  if(armci_async_config_flag == 1) {
+    MPI_Info_set(alloc_shm_info, "async_config", "on");
+  } else if(armci_async_config_flag == 2) {
+    MPI_Info_set(alloc_shm_info, "async_config", "off");
+  } else if(armci_async_config_flag == 3) {
+    MPI_Info_set(alloc_shm_info, "async_config", "auto");
+  }
+#endif
 
+  if (ARMCII_GLOBAL_STATE.use_win_allocate) {
       MPI_Win_allocate( (MPI_Aint) local_size, 1, alloc_shm_info, group->comm, &(alloc_slices[alloc_me].base), &mreg->window);
 
       if (local_size == 0) {
