@@ -18,9 +18,9 @@
 
 #ifdef ENABLE_PROFILE
 
-#ifdef ENABLE_MTCORE_PROFILE
-extern void MTCORE_Profile_reset_flush_counter(MPI_Win win);
-extern void MTCORE_Profile_print_flush_counter(MPI_Win win);
+#ifdef ENABLE_CSP_PROFILE
+extern void CSP_Profile_reset_flush_counter(MPI_Win win);
+extern void CSP_Profile_print_flush_counter(MPI_Win win);
 #endif
 
 const char *ARMCI_Profile_func_names[PROF_MAX_NUM_PROFILE_FUNC] = {
@@ -92,10 +92,10 @@ void ARMCI_Profile_reset_counter()
     for (i = 0; i < PROF_MAX_NUM_PROFILE_FUNC * profile_global_var_nproc; i++)
         prof_counters[i] = 0;
 
-#ifdef ENABLE_MTCORE_PROFILE
+#ifdef ENABLE_CSP_PROFILE
     gmr_t *cur_mreg = gmr_list;
     while (cur_mreg) {
-        MTCORE_Profile_reset_flush_counter(cur_mreg->window);
+        CSP_Profile_reset_flush_counter(cur_mreg->window);
         cur_mreg = cur_mreg->next;
     }
 #endif
@@ -187,10 +187,10 @@ void ARMCI_Profile_print_counter(char *name)
             }
         }
 
-#ifdef ENABLE_MTCORE_PROFILE
+#ifdef ENABLE_CSP_PROFILE
         gmr_t *cur_mreg = gmr_list;
         while (cur_mreg) {
-            MTCORE_Profile_print_flush_counter(cur_mreg->window);
+            CSP_Profile_print_flush_counter(cur_mreg->window);
             cur_mreg = cur_mreg->next;
         }
 #endif
