@@ -39,6 +39,25 @@ void armci_reset_async(){/*do nothing*/}
 void armci_auto_async(){/*do nothing*/}
 #endif
 
+#ifdef USE_CSP_RMA_DBG
+static char armci_dbg_gmr_name[MPI_MAX_OBJECT_NAME + 1];
+static int armci_dbg_gmr_name_set = 0;
+void armci_dbg_set_gmr_name(const char *name)
+{
+    memset(armci_dbg_gmr_name, 0, sizeof(armci_dbg_gmr_name));
+    strncpy(armci_dbg_gmr_name, name, MPI_MAX_OBJECT_NAME);
+    armci_dbg_gmr_name_set = 1;
+}
+
+void armci_dbg_reset_gmr_name()
+{
+    armci_dbg_gmr_name_set = 0;
+}
+#else
+void armci_dbg_set_gmr_name(const char *name){/*do nothing*/}
+void armci_dbg_reset_gmr_name(){/*do nothing*/}
+#endif
+
 /** Create a distributed shared memory region. Collective on ARMCI group.
   *
   * @param[in]  local_size Size of the local slice of the memory region.
@@ -112,6 +131,16 @@ gmr_t *gmr_create(gmr_size_t local_size, void **base_ptrs, ARMCI_Group *group) {
     MPI_Info_set(alloc_shm_info, "async_config", "off");
   } else if(armci_async_config_flag == 3) {
     MPI_Info_set(alloc_shm_info, "async_config", "auto");
+  }
+#endif
+
+#ifdef USE_CSP_RMA_DBG
+  /* Note: we don't use win_set_name here, because this can only be set after win_allocate. */
+  if(alloc_shm_info == MPI_INFO_NULL) {
+      MPI_Info_create(&alloc_shm_info);
+  }
+  if(armci_dbg_gmr_name_set == 1) {
+      MPI_Info_set(alloc_shm_info, "win_name", armci_dbg_gmr_name);
   }
 #endif
 
