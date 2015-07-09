@@ -101,9 +101,12 @@ void PARMCI_AllFence(void) {
 
   while (cur_mreg) {
     gmr_flushall(cur_mreg, 0);
+    gmr_sync(cur_mreg);
+
     cur_mreg = cur_mreg->next;
   }
 
+  MPI_Barrier(ARMCI_GROUP_WORLD.comm);
   ARMCI_FUNC_PROFILE_TIMING_END(PARMCI_AllFence);
 
   return;
