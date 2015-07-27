@@ -112,6 +112,25 @@ void PARMCI_AllFence(void) {
   return;
 }
 
+#ifdef USE_CSP_ASYNC_CONFIG
+#include <casper.h>
+
+void armci_global_dump_async_config(const char *fname) {
+  gmr_t *cur_mreg = gmr_list;
+  int group_me = -1;
+
+  while (cur_mreg) {
+    MPI_Comm_rank(cur_mreg->group.comm, &group_me);
+
+    if(group_me == 0)
+        CSP_win_dump_async_config(cur_mreg->window, fname);
+    cur_mreg = cur_mreg->next;
+  }
+  return;
+}
+#else
+void armci_global_dump_async_config(const char *fname) {/*do nothing*/}
+#endif
 
 int ARMCI_Uses_shm(void) {
   return 0;
