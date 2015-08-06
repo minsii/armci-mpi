@@ -90,6 +90,40 @@ void PARMCI_Fence(int proc) {
 #endif
 /* -- end weak symbols block -- */
 
+#ifdef USE_CSP_ASYNC_CONFIG
+extern int armci_async_config_flag;
+void armci_resched_local_async_config(MPI_Win window) {
+    MPI_Info info;
+    MPI_Info_create(&info);
+    /* only update local async status. */
+    MPI_Info_set(info, "async_config_phases", "local-update");
+    MPI_Win_set_info(window, info);
+    MPI_Info_free(&info);
+}
+
+void armci_update_async_config(MPI_Win window) {
+    MPI_Info info;
+
+    MPI_Info_create(&info);
+
+    MPI_Info_set(info, (char *) "symmetric", (char *) "true");
+    /* update window async config */
+    if(armci_async_config_flag == 1) {
+        MPI_Info_set(info, "async_config", "on");
+    } else if(armci_async_config_flag == 2) {
+        MPI_Info_set(info, "async_config", "off");
+    } else if(armci_async_config_flag == 3) {
+        MPI_Info_set(info, "async_config", "auto");
+    }
+
+    /* enable async status remote update (only valid when current window config is auto) */
+    MPI_Info_set(info, "async_config_phases", "remote-exchange");
+
+    MPI_Win_set_info(window, info);
+    MPI_Info_free(&info);
+}
+#endif
+
 /** Wait for remote completion on all one-sided operations.  In MPI-2, this is
   * a no-op since get/put/acc already guarantee remote completion.
   */
@@ -107,6 +141,19 @@ void PARMCI_AllFence(void) {
   }
 
   MPI_Barrier(ARMCI_GROUP_WORLD.comm);
+
+#ifdef USE_CSP_ASYNC_CONFIG
+    /* update asynchronous progress for all windows */
+    cur_mreg = gmr_list;
+    armci_resched_local_async_config(cur_mreg->window);
+
+    cur_mreg = gmr_list;
+    while (cur_mreg) {
+        armci_update_async_config(cur_mreg->window);
+        cur_mreg = cur_mreg->next;
+    }
+#endif
+
   ARMCI_FUNC_PROFILE_TIMING_END(PARMCI_AllFence);
 
   return;
