@@ -118,7 +118,7 @@ gmr_t *gmr_create(gmr_size_t local_size, void **base_ptrs, ARMCI_Group *group) {
   if(alloc_shm_info == MPI_INFO_NULL) {
     MPI_Info_create(&alloc_shm_info);
   }
-  MPI_Info_set(alloc_shm_info, "epoch_type", "lockall");
+  MPI_Info_set(alloc_shm_info, "epochs_used", "lockall");
 #endif
 
 #ifdef USE_CSP_ASYNC_CONFIG
