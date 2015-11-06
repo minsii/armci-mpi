@@ -207,7 +207,7 @@ int PARMCI_Init(void) {
 
   /* Enable RMA element-wise atomicity */
 
-  ARMCII_GLOBAL_STATE.rma_atomicity=ARMCII_Getenv_bool("ARMCI_RMA_ATOMICITY", 1);
+  ARMCII_GLOBAL_STATE.rma_atomicity=ARMCII_Getenv_bool("ARMCI_RMA_ATOMICITY", 0);
 
   /* Flush_local becomes flush */
 
@@ -281,6 +281,7 @@ int PARMCI_Init(void) {
       printf("  NONCOLLECTIVE_GROUPS   = %s\n", ARMCII_GLOBAL_STATE.noncollective_groups   ? "TRUE" : "FALSE");
       printf("  CACHE_RANK_TRANSLATION = %s\n", ARMCII_GLOBAL_STATE.cache_rank_translation ? "TRUE" : "FALSE");
       printf("  DEBUG_ALLOC            = %s\n", ARMCII_GLOBAL_STATE.debug_alloc            ? "TRUE" : "FALSE");
+      printf("  RMA_ATOMICITY          = %s\n", ARMCII_GLOBAL_STATE.rma_atomicity          ? "TRUE" : "FALSE");
       printf("\n");
       fflush(NULL);
     }
