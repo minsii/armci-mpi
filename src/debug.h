@@ -49,4 +49,22 @@ void    ARMCII_Dbg_print_impl(const char *func, const char *format, ...);
 void    ARMCII_Error_impl(const char *file, const int line, const char *func, const char *msg, ...);
 void    ARMCII_Warning(const char *fmt, ...);
 
+
+extern int armci_extern_enable_debug_output;
+#ifdef ENABLE_EXTERN_DEBUG
+#define ARMCI_DBG_PRINT_STDOUT(str,...) do {                            \
+    if(armci_extern_enable_debug_output >= 1)                           \
+        fprintf(stdout, str, ## __VA_ARGS__);fflush(stdout);            \
+} while (0)
+#else
+#define ARMCI_DBG_PRINT_STDOUT(str,...) do { } while (0)
+#endif
+
+
+#ifdef NWCHEM_ADAPT_TPI_DBG
+/* NOTE: only used with NWCHEM debug */
+extern void tpi_dbg_print_file_(const char *text);
+extern int dbg_print_file_opened;
+#endif
+
 #endif /* _DEBUG_H_ */

@@ -142,6 +142,10 @@ void PARMCI_AllFence(void) {
 
   MPI_Barrier(ARMCI_GROUP_WORLD.comm);
 
+    if (ARMCI_GROUP_WORLD.rank == 0) {
+        ARMCI_DBG_PRINT_STDOUT("called %s\n", __FUNCTION__);
+    }
+
 #ifdef USE_CSP_ASYNC_CONFIG
     /* update asynchronous progress for all windows */
     cur_mreg = gmr_list;

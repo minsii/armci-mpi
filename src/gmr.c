@@ -114,6 +114,10 @@ gmr_t *gmr_create(gmr_size_t local_size, void **base_ptrs, ARMCI_Group *group) {
       alloc_shm_info = MPI_INFO_NULL;
   }
 
+    if (alloc_me == 0) {
+        ARMCI_DBG_PRINT_STDOUT("called %s\n", __FUNCTION__);
+    }
+
 #ifdef USE_CSP_EPOCH_TYPE
   if(alloc_shm_info == MPI_INFO_NULL) {
     MPI_Info_create(&alloc_shm_info);

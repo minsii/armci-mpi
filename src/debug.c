@@ -10,6 +10,8 @@
 #include <armci_internals.h>
 #include <debug.h>
 
+int armci_extern_enable_debug_output = 0;
+
 /* Set the default debugging message classes to enable.
  */
 unsigned DEBUG_CATS_ENABLED = 

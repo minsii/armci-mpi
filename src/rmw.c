@@ -57,6 +57,10 @@ int PARMCI_Rmw(int op, void *ploc, void *prem, int value, int proc) {
 
   ARMCII_Assert_msg(dst_mreg != NULL, "Invalid remote pointer");
 
+  if (ARMCI_GROUP_WORLD.rank == 0) {
+      ARMCI_DBG_PRINT_STDOUT("called %s, target %d\n", __FUNCTION__, proc);
+  }
+
   if (op == ARMCI_SWAP_LONG || op == ARMCI_FETCH_AND_ADD_LONG) {
     is_long = 1;
     type = MPI_LONG;

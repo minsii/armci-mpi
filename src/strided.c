@@ -155,6 +155,24 @@ int PARMCI_PutS(void *src_ptr, int src_stride_ar[/*stride_levels*/],
     MPI_Type_commit(&src_type);
     MPI_Type_commit(&dst_type);
 
+    if (ARMCI_GROUP_WORLD.rank == 0) {
+        int size = 0;
+        MPI_Type_size(src_type, &size);
+        ARMCI_DBG_PRINT_STDOUT("called %s, size %d, target %d\n",
+                __FUNCTION__, size, proc);
+    }
+
+#ifdef NWCHEM_ADAPT_TPI_DBG
+    if (dbg_print_file_opened == 1) {
+        char temp_str[512];
+        int size = 0;
+        MPI_Type_size(src_type, &size);
+        memset(temp_str, 0, sizeof(temp_str));
+        sprintf(temp_str, "called %s, size %d, target %d", __FUNCTION__, size, proc);
+        tpi_dbg_print_file_((const char *) temp_str);
+    }
+#endif
+
     mreg = gmr_lookup(dst_ptr, proc);
     ARMCII_Assert_msg(mreg != NULL, "Invalid shared pointer");
 
@@ -257,6 +275,13 @@ int PARMCI_GetS(void *src_ptr, int src_stride_ar[/*stride_levels*/],
 
     MPI_Type_commit(&src_type);
     MPI_Type_commit(&dst_type);
+
+    if (ARMCI_GROUP_WORLD.rank == 0) {
+        int size = 0;
+        MPI_Type_size(src_type, &size);
+        ARMCI_DBG_PRINT_STDOUT("called %s, size %d, target %d\n",
+                __FUNCTION__, size, proc);
+    }
 
     mreg = gmr_lookup(src_ptr, proc);
     ARMCII_Assert_msg(mreg != NULL, "Invalid shared pointer");
@@ -404,6 +429,20 @@ int PARMCI_AccS(int datatype, void *scale,
     MPI_Type_size(dst_type, &dst_size);
 
     ARMCII_Assert(src_size == dst_size);
+
+    if (ARMCI_GROUP_WORLD.rank == 0) {
+        ARMCI_DBG_PRINT_STDOUT("called %s, size %d, target %d\n",
+                __FUNCTION__, src_size, proc);
+    }
+
+#ifdef NWCHEM_ADAPT_TPI_DBG
+    if (dbg_print_file_opened == 1) {
+        char temp_str[512];
+        memset(temp_str, 0, sizeof(temp_str));
+        sprintf(temp_str, "called %s, size %d, target %d", __FUNCTION__, src_size, proc);
+        tpi_dbg_print_file_((const char *) temp_str);
+    }
+#endif
 
     mreg = gmr_lookup(dst_ptr, proc);
     ARMCII_Assert_msg(mreg != NULL, "Invalid shared pointer");
