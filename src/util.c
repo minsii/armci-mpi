@@ -147,15 +147,26 @@ void PARMCI_AllFence(void) {
     }
 
 #ifdef USE_CSP_ASYNC_CONFIG
+    int idx = 0, verbose = 0;
+
     /* update asynchronous progress for all windows */
     cur_mreg = gmr_list;
     armci_resched_local_async_config(cur_mreg->window);
 
+    CSP_get_verbose(&verbose);
+
     cur_mreg = gmr_list;
     while (cur_mreg) {
+        if(idx == 1)
+            CSP_set_verbose(1);
+
         armci_update_async_config(cur_mreg->window);
         cur_mreg = cur_mreg->next;
+        idx++;
     }
+
+    /* reset verbose */
+    CSP_set_verbose(verbose);
 #endif
 
   ARMCI_FUNC_PROFILE_TIMING_END(PARMCI_AllFence);
