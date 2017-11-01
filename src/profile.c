@@ -87,7 +87,13 @@ void ARMCI_Profile_destroy()
 
 void ARMCI_Profile_reset_counter()
 {
-    int i;
+    int i, rank;
+
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    if (rank == 0) {
+        fprintf(stderr, "armci counter reset\n");
+        fflush(stderr);
+    }
 
     for (i = 0; i < PROF_MAX_NUM_PROFILE_FUNC * profile_global_var_nproc; i++)
         prof_counters[i] = 0;
@@ -103,7 +109,13 @@ void ARMCI_Profile_reset_counter()
 
 void ARMCI_Profile_reset_timing()
 {
-    int i;
+    int i, rank;
+
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    if (rank == 0) {
+        fprintf(stderr, "armci timing reset\n");
+        fflush(stderr);
+    }
 
     for (i = 0; i < PROF_MAX_NUM_PROFILE_FUNC; i++)
         prof_timings[i] = 0.0;
