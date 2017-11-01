@@ -149,6 +149,9 @@ int gmr_unlockall(gmr_t *mreg) {
   * @return                 0 on success, non-zero on failure
   */
 int gmr_flush(gmr_t *mreg, int proc, int local_only) {
+  ARMCI_FUNC_PROFILE_TIMING_START(gmr_flush_trans);
+  ARMCI_FUNC_PROFILE_COUNTER_INC(gmr_flush_trans, proc);
+
   int grp_proc = ARMCII_Translate_absolute_to_group(&mreg->group, proc);
   int grp_me   = ARMCII_Translate_absolute_to_group(&mreg->group, ARMCI_GROUP_WORLD.rank);
 
@@ -156,11 +159,17 @@ int gmr_flush(gmr_t *mreg, int proc, int local_only) {
   ARMCII_Assert_msg(mreg->window != MPI_WIN_NULL, "A non-null mreg contains a null window.");
   ARMCII_Assert_msg(grp_proc < mreg->group.size, "grp_proc exceeds group size!");
 
+  ARMCI_FUNC_PROFILE_TIMING_END(gmr_flush_trans);
+  ARMCI_FUNC_PROFILE_TIMING_START(gmr_flush);
+  ARMCI_FUNC_PROFILE_COUNTER_INC(gmr_flush, proc);
+
   if (!local_only || ARMCII_GLOBAL_STATE.end_to_end_flush) {
     MPI_Win_flush(grp_proc, mreg->window);
   } else {
     MPI_Win_flush_local(grp_proc, mreg->window);
   }
+
+  ARMCI_FUNC_PROFILE_TIMING_END(gmr_flush);
 
   return 0;
 }
@@ -171,13 +180,17 @@ int gmr_flush(gmr_t *mreg, int proc, int local_only) {
   * @return                 0 on success, non-zero on failure
   */
 int gmr_flushall(gmr_t *mreg, int local_only) {
-  int grp_me   = ARMCII_Translate_absolute_to_group(&mreg->group, ARMCI_GROUP_WORLD.rank);
+  ARMCI_FUNC_PROFILE_TIMING_START(gmr_flushall_trans);
+  ARMCI_FUNC_PROFILE_COUNTER_INC(gmr_flushall_trans, 0);
 
-  ARMCI_FUNC_PROFILE_TIMING_START(gmr_flushall);
-  ARMCI_FUNC_PROFILE_COUNTER_INC(gmr_flushall, 0);
+  int grp_me   = ARMCII_Translate_absolute_to_group(&mreg->group, ARMCI_GROUP_WORLD.rank);
 
   ARMCII_Assert(grp_me >= 0);
   ARMCII_Assert_msg(mreg->window != MPI_WIN_NULL, "A non-null mreg contains a null window.");
+
+  ARMCI_FUNC_PROFILE_TIMING_END(gmr_flushall_trans);
+  ARMCI_FUNC_PROFILE_TIMING_START(gmr_flushall);
+  ARMCI_FUNC_PROFILE_COUNTER_INC(gmr_flushall, 0);
 
   if (!local_only || ARMCII_GLOBAL_STATE.end_to_end_flush) {
     MPI_Win_flush_all(mreg->window);

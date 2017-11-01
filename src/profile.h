@@ -25,7 +25,10 @@ enum ARMCI_Profile_func {
     PROF_PARMCI_Wait,
     PROF_gmr_create,
     PROF_gmr_destroy,
+    PROF_gmr_flushall_trans,
     PROF_gmr_flushall,
+    PROF_gmr_flush_trans,
+    PROF_gmr_flush,
     PROF_MAX_NUM_PROFILE_FUNC
 };
 
@@ -39,11 +42,11 @@ extern void ARMCI_Profile_init();
 #define ARMCI_PROFILE_INIT ARMCI_Profile_init
 #define ARMCI_PROFILE_DESTROY ARMCI_Profile_destroy
 
-#define ARMCI_FUNC_PROFILE_TIMING_START(func) double _profile_time_start = MPI_Wtime();
+#define ARMCI_FUNC_PROFILE_TIMING_START(func) double _profile_##func##_time_start = MPI_Wtime();
 #define ARMCI_FUNC_PROFILE_TIMING_END(func) {   \
     ARMCII_Assert(PROF_##func < MAX_NPROC);	\
     if (PROF_##func >= 0 && PROF_##func < PROF_MAX_NUM_PROFILE_FUNC) \
-        prof_timings[PROF_##func] += MPI_Wtime() - _profile_time_start;   \
+        prof_timings[PROF_##func] += MPI_Wtime() - _profile_##func##_time_start;   \
 }
 
 #define ARMCI_FUNC_PROFILE_COUNTER_INC(func, target) {  \

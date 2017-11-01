@@ -37,7 +37,10 @@ const char *ARMCI_Profile_func_names[PROF_MAX_NUM_PROFILE_FUNC] = {
     "PARMCI_Wait",
     "gmr_create",
     "gmr_destroy",
+    "gmr_flushall_trans",
     "gmr_flushall",
+    "gmr_flush_trans",
+    "gmr_flush",
 };
 
 int profile_global_var_nproc = 0;
