@@ -146,7 +146,8 @@ void ARMCI_Profile_print_timing(char *name)
         for (i = 0; i < PROF_MAX_NUM_PROFILE_FUNC; i++) {
             if (timers_avg[i] > 0.0) {
                 timers_avg[i] = timers_avg[i] / size;
-                fprintf(stderr, "%s %s : %lf\n", name, ARMCI_Profile_func_names[i], timers_avg[i]);
+                fprintf(stderr, "%s timers = %s : %lf\n", name, ARMCI_Profile_func_names[i],
+                        timers_avg[i]);
             }
         }
         fflush(stderr);
@@ -193,7 +194,7 @@ void ARMCI_Profile_print_counter(char *name)
     if (rank == 0) {
         for (i = 0; i < PROF_MAX_NUM_PROFILE_FUNC; i++) {
             if (counters_total_avg[i] > 0) {
-                fprintf(stderr, "%s %s : %d\n", name, ARMCI_Profile_func_names[i],
+                fprintf(stderr, "%s counters = %s : %d\n", name, ARMCI_Profile_func_names[i],
                         counters_total_avg[i]);
                 fflush(stderr);
             }
