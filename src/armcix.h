@@ -42,5 +42,6 @@ int  ARMCIX_Trylock_hdl(armcix_mutex_hdl_t hdl, int mutex, int proc);
 void ARMCIX_Unlock_hdl(armcix_mutex_hdl_t hdl, int mutex, int proc);
 
 void ARMCIX_Progress(void);
+void ARMCIX_Malloc_set_info(const char* key, const char *value);
 
 #endif /* _ARMCIX_H_ */

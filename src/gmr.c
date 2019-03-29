@@ -17,6 +17,25 @@
   */
 gmr_t *gmr_list = NULL;
 
+static MPI_Info gmr_create_info = MPI_INFO_NULL;
+
+/* Automatically created if on object exists, freed after creation of the
+ * upcoming gmr.  */
+void ARMCIX_Malloc_set_info(const char* key, const char *value)
+{
+    if (gmr_create_info == MPI_INFO_NULL)
+        MPI_Info_create(&gmr_create_info);
+    MPI_Info_set(gmr_create_info, key, value);
+
+    if (ARMCII_GLOBAL_STATE.verbose) {
+        int world_me;
+        MPI_Comm_rank(ARMCI_GROUP_WORLD.comm, &world_me);
+        if (world_me == 0) {
+            fprintf(stdout, "ARMCIX set_info key=%s, value=%s\n", key, value);
+            fflush(stdout);
+        }
+    }
+}
 
 /** Create a distributed shared memory region. Collective on ARMCI group.
   *
@@ -63,22 +82,18 @@ gmr_t *gmr_create(gmr_size_t local_size, void **base_ptrs, ARMCI_Group *group) {
   /* Allocate my slice of the GMR */
   alloc_slices[alloc_me].size = local_size;
 
-  MPI_Info alloc_shm_info = MPI_INFO_NULL;
-  if (ARMCII_GLOBAL_STATE.use_alloc_shm) {
-      MPI_Info_create(&alloc_shm_info);
-      MPI_Info_set(alloc_shm_info, "alloc_shm", "true");
-  } else /* no alloc_shm */ {
-      alloc_shm_info = MPI_INFO_NULL;
-  }
+  if(gmr_create_info == MPI_INFO_NULL)
+      MPI_Info_create(&gmr_create_info);
+
+  if (ARMCII_GLOBAL_STATE.use_alloc_shm)
+      MPI_Info_set(gmr_create_info, "alloc_shm", "true");
 
   if (ARMCII_GLOBAL_STATE.use_win_allocate) {
 
       /* give hint to CASPER to avoid extra work for lock permission */
-      if (alloc_shm_info == MPI_INFO_NULL)
-          MPI_Info_create(&alloc_shm_info);
-      MPI_Info_set(alloc_shm_info, "epochs_used", "lockall");
+      MPI_Info_set(gmr_create_info, "epochs_used", "lockall");
 
-      MPI_Win_allocate( (MPI_Aint) local_size, 1, alloc_shm_info, group->comm, &(alloc_slices[alloc_me].base), &mreg->window);
+      MPI_Win_allocate( (MPI_Aint) local_size, 1, gmr_create_info, group->comm, &(alloc_slices[alloc_me].base), &mreg->window);
 
       if (local_size == 0) {
         /* TODO: Is this necessary?  Is it a good idea anymore? */
@@ -90,15 +105,16 @@ gmr_t *gmr_create(gmr_size_t local_size, void **base_ptrs, ARMCI_Group *group) {
       if (local_size == 0) {
         alloc_slices[alloc_me].base = NULL;
       } else {
-        MPI_Alloc_mem(local_size, alloc_shm_info, &(alloc_slices[alloc_me].base));
+        MPI_Alloc_mem(local_size, gmr_create_info, &(alloc_slices[alloc_me].base));
         ARMCII_Assert(alloc_slices[alloc_me].base != NULL);
       }
-      MPI_Win_create(alloc_slices[alloc_me].base, (MPI_Aint) local_size, 1, MPI_INFO_NULL, group->comm, &mreg->window);
+      MPI_Win_create(alloc_slices[alloc_me].base, (MPI_Aint) local_size, 1, gmr_create_info, group->comm, &mreg->window);
 
   } /* win allocate/create */
 
-  if (alloc_shm_info != MPI_INFO_NULL) {
-      MPI_Info_free(&alloc_shm_info);
+  if (gmr_create_info != MPI_INFO_NULL) {
+      MPI_Info_free(&gmr_create_info);
+      gmr_create_info = MPI_INFO_NULL;
   }
 
   /* Debugging: Zero out shared memory if enabled */
